@@ -1,14 +1,9 @@
 import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import * as kms from 'aws-cdk-lib/aws-kms';
 import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
-import * as notifications from 'aws-cdk-lib/aws-codestarnotifications';
-import * as sns from 'aws-cdk-lib/aws-sns';
-import * as sns_sub from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Construct } from 'constructs';
 
 interface PipelineStackProps extends cdk.StackProps {
@@ -30,8 +25,7 @@ export class PipelineStack extends cdk.Stack {
     } = props;
 
     /** Github Token */
-    const githubToken = secretsmanager.Secret.fromSecretNameV2(this, 'githubSecret', 'github-token');
-    //to retrieve token: githubToken.secretValueFromJson('secret')
+    const githubToken = cdk.SecretValue.secretsManager('github-token');
 
     const infrastructureDeployRole = new iam.Role(
       this,
@@ -124,7 +118,7 @@ export class PipelineStack extends cdk.Stack {
           actionName: 'InfrastructureSource',
           branch: infrastructureBranchName,
           output: infrastructureSourceOutput,
-          oauthToken: githubToken.secretValueFromJson('secret')
+          oauthToken: githubToken
         })
       ]
     })
